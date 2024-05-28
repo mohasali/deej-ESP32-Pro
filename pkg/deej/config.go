@@ -10,13 +10,15 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
-	"github.com/omriharel/deej/pkg/deej/util"
+	"github.com/omriharel/deej/util"
 )
 
 // CanonicalConfig provides application-wide access to configuration fields,
 // as well as loading/file watching logic for deej's configuration file
 type CanonicalConfig struct {
 	SliderMapping *sliderMap
+
+	buttonMapping *buttonMap
 
 	ConnectionInfo struct {
 		COMPort  string
@@ -49,6 +51,7 @@ const (
 	configType = "yaml"
 
 	configKeySliderMapping       = "slider_mapping"
+	configKeyButtonMapping       = "button_mapping"
 	configKeyInvertSliders       = "invert_sliders"
 	configKeyCOMPort             = "com_port"
 	configKeyBaudRate            = "baud_rate"
@@ -60,13 +63,6 @@ const (
 
 // has to be defined as a non-constant because we're using path.Join
 var internalConfigPath = path.Join(".", logDirectory)
-
-var defaultSliderMapping = func() *sliderMap {
-	emptyMap := newSliderMap()
-	emptyMap.set(0, []string{masterSessionName})
-
-	return emptyMap
-}()
 
 // NewConfig creates a config instance for the deej object and sets up viper instances for deej's config files
 func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, error) {
@@ -86,6 +82,8 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 	userConfig.AddConfigPath(userConfigPath)
 
 	userConfig.SetDefault(configKeySliderMapping, map[string][]string{})
+	userConfig.SetDefault(configKeyButtonMapping, map[string][]string{})
+
 	userConfig.SetDefault(configKeyInvertSliders, false)
 	userConfig.SetDefault(configKeyCOMPort, defaultCOMPort)
 	userConfig.SetDefault(configKeyBaudRate, defaultBaudRate)
@@ -145,6 +143,7 @@ func (cc *CanonicalConfig) Load() error {
 	cc.logger.Info("Loaded config successfully")
 	cc.logger.Infow("Config values",
 		"sliderMapping", cc.SliderMapping,
+		"buttonMapping", cc.buttonMapping,
 		"connectionInfo", cc.ConnectionInfo,
 		"invertSliders", cc.InvertSliders)
 
@@ -223,8 +222,21 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 		cc.internalConfig.GetStringMapStringSlice(configKeySliderMapping),
 	)
 
-	// get the rest of the config fields - viper saves us a lot of effort here
-	cc.ConnectionInfo.COMPort = cc.userConfig.GetString(configKeyCOMPort)
+	cc.buttonMapping = buttonrMapFromConfigs(
+		cc.userConfig.GetStringMapStringSlice(configKeyButtonMapping),
+		cc.internalConfig.GetStringMapStringSlice(configKeyButtonMapping),
+	)
+
+	autoSearch := cc.userConfig.GetString(configKeyCOMPort) == "auto"
+	if autoSearch {
+		name, err := GetPortName()
+		if err != nil {
+			cc.ConnectionInfo.COMPort = ""
+		}
+		cc.ConnectionInfo.COMPort = name
+	} else {
+		cc.ConnectionInfo.COMPort = cc.userConfig.GetString(configKeyCOMPort)
+	}
 
 	cc.ConnectionInfo.BaudRate = cc.userConfig.GetInt(configKeyBaudRate)
 	if cc.ConnectionInfo.BaudRate <= 0 {

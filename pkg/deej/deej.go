@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/omriharel/deej/pkg/deej/util"
+	"github.com/omriharel/deej/util"
 )
 
 const (
@@ -161,8 +161,8 @@ func (d *Deej) run() {
 				d.logger.Warnw("Provided COM port seems wrong, notifying user and closing",
 					"comPort", d.config.ConnectionInfo.COMPort)
 
-				d.notifier.Notify(fmt.Sprintf("Can't connect to %s!", d.config.ConnectionInfo.COMPort),
-					"This serial port doesn't exist, check your configuration and make sure it's set correctly.")
+				d.notifier.Notify("Can't connect to serial port",
+					"The serial device can not be found or does not exist")
 
 				d.signalStop()
 			}
