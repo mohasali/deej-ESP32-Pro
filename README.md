@@ -1,4 +1,4 @@
-This fork adds the following features:
+**This fork adds the following features:**
 
 - Upgraded the Arduino code to only send data when needed to help save battery.
 - Added Bluetooth communication.
@@ -12,6 +12,9 @@ This fork adds the following features:
 - Changed tray.go to use up to date systray
 - Overall improved Arduino code
 - Added button functionality which allows you to emulate a keyboard button, open a file, or run cmd statments. 
+
+**Might Add:**
+- GUI interface to edit the config file
 
 
 # deej
