@@ -1,3 +1,19 @@
+This fork adds the following features:
+
+- Upgraded the Arduino code to only send data when needed to help save battery.
+- Added Bluetooth communication.
+- Changed Arduino code so it only sends data when there is a value change to helps save battery.
+- Added a way to smooth the data from potentiometer which helps save battery by sending less data.
+- Added a way to auto search for the port.
+- Added a check to see if the device is connected and what type of connection it is.
+- Added a check to see if the BT device has been disconnected.
+- Changed code so that it only sends data when it is connected. 
+- Change code so it sends data through the correct method only which should helps save battery
+- Changed tray.go to use up to date systray
+- Overall improved Arduino code
+- Added button functionality which allows you to emulate a keyboard button, open a file, or run cmd statments. 
+
+
 # deej
 
 deej is an **open-source hardware volume mixer** for Windows and Linux PCs. It lets you use real-life sliders (like a DJ!) to **seamlessly control the volumes of different apps** (such as your music player, the game you're playing and your voice chat session) without having to stop what you're doing.
