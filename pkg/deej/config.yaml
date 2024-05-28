@@ -27,6 +27,7 @@ button_mapping:
 invert_sliders: true
 
 # settings for connecting to the arduino board
+# use auto to automatically search for the correct COM port
 com_port: auto
 baud_rate: 9600
 
