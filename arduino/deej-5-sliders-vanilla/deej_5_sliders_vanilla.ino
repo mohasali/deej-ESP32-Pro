@@ -88,7 +88,15 @@ bool updateSliderValues() {
     int combinedValue = (smoothedValue[potIndex] + medianValue) / 2;
 
     if (combinedValue > analogSliderValues[potIndex] + MIN_CHANGE || combinedValue < analogSliderValues[potIndex] - MIN_CHANGE) {
-      analogSliderValues[potIndex] = combinedValue;
+      if(combinedValue+MIN_CHANGE>1023){
+        analogSliderValues[potIndex] = 1023;}
+
+      else if(combinedValue-MIN_CHANGE<0){
+        analogSliderValues[potIndex] = 0;}
+
+      else{
+        analogSliderValues[potIndex] = combinedValue;}
+
       valueChange = true;
     }
   }
