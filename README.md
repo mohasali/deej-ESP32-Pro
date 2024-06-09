@@ -12,7 +12,7 @@
 - Changed tray.go to use up to date systray
 - Overall improved Arduino code
 - Added button functionality which allows you to emulate a keyboard button, open a file, or run cmd statments. 
-
+- Added filtering for analog inputs ( better smoothing method than previous implementation)
 **Might Add:**
 - GUI interface to edit the config file
 
