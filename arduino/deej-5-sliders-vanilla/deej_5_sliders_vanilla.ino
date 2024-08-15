@@ -1,6 +1,6 @@
 #include <BluetoothSerial.h>
 
-const int MIN_CHANGE = 5;
+const int MIN_CHANGE = 20;
 const int NUM_SLIDERS = 4;
 const int analogInputs[NUM_SLIDERS] = {26, 33, 32, 35};
 
@@ -24,17 +24,6 @@ BluetoothSerial SerialBT;
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-#define NUM_SAMPLES 10 // Reduced number of samples for faster response
-#define MEDIAN_SAMPLES 5 // Reduced for faster response
-float alpha = 0.5; // Increased alpha for faster response
-
-int readings[NUM_SLIDERS][NUM_SAMPLES] = {0};
-int medianSamples[MEDIAN_SAMPLES];
-int readIndex[NUM_SLIDERS] = {0};
-int total[NUM_SLIDERS] = {0};
-int average[NUM_SLIDERS] = {0};
-float smoothedValue[NUM_SLIDERS] = {0};
-
 void setup() { 
   SerialBT.begin();
   Serial.begin(9600);
@@ -56,52 +45,29 @@ void loop() {
   // printSliderValues(); // For debug
   delay(50);
 }
-
 bool updateSliderValues() {
   bool valueChange = false;
   for (int potIndex = 0; potIndex < NUM_SLIDERS; potIndex++) {
     // Take a new reading
     int newValue = analogRead(analogInputs[potIndex]);
-
-    // Update the total for averaging
-    total[potIndex] -= readings[potIndex][readIndex[potIndex]];
-    readings[potIndex][readIndex[potIndex]] = newValue;
-    total[potIndex] += readings[potIndex][readIndex[potIndex]];
-    readIndex[potIndex] = (readIndex[potIndex] + 1) % NUM_SAMPLES;
-
-    // Calculate the average
-    average[potIndex] = total[potIndex] / NUM_SAMPLES;
-
-    // Apply the low-pass filter
-    smoothedValue[potIndex] = alpha * average[potIndex] + (1 - alpha) * smoothedValue[potIndex];
-
-    // Collect samples for median filtering
-    for (int i = 0; i < MEDIAN_SAMPLES; i++) {
-      medianSamples[i] = analogRead(analogInputs[potIndex]);
-      delay(2); // Small delay between samples
-    }
-
-    // Calculate the median
-    int medianValue = median(medianSamples, MEDIAN_SAMPLES);
-
-    // Combine the results
-    int combinedValue = (smoothedValue[potIndex] + medianValue) / 2;
-
-    if (combinedValue > analogSliderValues[potIndex] + MIN_CHANGE || combinedValue < analogSliderValues[potIndex] - MIN_CHANGE) {
-      if(combinedValue+MIN_CHANGE>1023){
-        analogSliderValues[potIndex] = 1023;}
-
-      else if(combinedValue-MIN_CHANGE<0){
-        analogSliderValues[potIndex] = 0;}
-
-      else{
-        analogSliderValues[potIndex] = combinedValue;}
+    
+    // Adjust threshold for detecting a change in the slider value
+    if (abs(newValue - analogSliderValues[potIndex]) > MIN_CHANGE) {
+      // Clamp the values between 0 and 1023
+      if (newValue + MIN_CHANGE > 1023) {
+        analogSliderValues[potIndex] = 1023;
+      } else if (newValue - MIN_CHANGE < 0) {
+        analogSliderValues[potIndex] = 0;
+      } else {
+        analogSliderValues[potIndex] = newValue;
+      }
 
       valueChange = true;
     }
   }
   return valueChange;
 }
+
 
 int median(int *array, int size) {
   int temp;
