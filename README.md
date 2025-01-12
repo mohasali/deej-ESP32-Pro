@@ -14,6 +14,7 @@
 - Added button functionality which allows you to emulate a keyboard button, open a file, or run cmd statments. 
 - Added filtering for analog inputs ( better smoothing method than previous implementation)
 - Added button double press
+
 **Might Add:**
 - GUI interface to edit the config file
 
